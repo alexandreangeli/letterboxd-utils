@@ -136,7 +136,7 @@ async function fetchMovieInfoWithRetry(element, year) {
 
 // Fetch movie information
 async function fetchMovieInfo(element, year) {
-  let LetterboxdURI = `https://letterboxd.com${element.getAttribute(
+  let LetterboxdURI = `https://letterboxd.com/film/${element.getAttribute(
     "data-film-slug"
   )}`;
   const id = element.getAttribute("data-film-id");
@@ -170,7 +170,9 @@ async function fetchMovieInfo(element, year) {
   }
 
   const statsResponse = await fetch(
-    `https://letterboxd.com/esi${element.getAttribute("data-film-slug")}stats`
+    `https://letterboxd.com/esi/film/${element.getAttribute(
+      "data-film-slug"
+    )}/stats`
   );
   const statsHtml = await statsResponse.text();
   const statsDoc = parser.parseFromString(statsHtml, "text/html");
