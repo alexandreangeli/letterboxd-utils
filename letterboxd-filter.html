@@ -1,0 +1,60 @@
+<html>
+  <label for="numberOfMoviesPerYear"
+    >Number of top movies to retrieve per year:</label
+  >
+  <input type="number" id="numberOfMoviesPerYear" value="15" />
+
+  <br />
+
+  <label for="numberOfMoviesToComparePerYear"
+    >Number of movies to consider for comparison per year:</label
+  >
+  <input type="number" id="numberOfMoviesToComparePerYear" value="30" />
+
+  <br />
+
+  <label for="minimumViews">Minimum amount of views required:</label>
+  <input type="number" id="minimumViews" value="50000" />
+
+  <br />
+
+  <label for="minimumRunTime"
+    >Minimum amount of minutes the movies needs:</label
+  >
+  <input type="number" id="minimumRunTime" value="60" />
+
+  <br />
+
+  <label for="maximumRunTime"
+    >Maximum amount of minutes the movies can have:</label
+  >
+  <input type="number" id="maximumRunTime" value="300" />
+
+  <br />
+
+  <label for="startingYear">Starting year for fetching rankings:</label>
+  <input type="number" id="startingYear" value="1870" />
+
+  <br />
+
+  <label for="endingYear">Ending year for fetching rankings:</label>
+  <input type="number" id="endingYear" value="2023" />
+
+  <br />
+
+  <label for="maxRetries">Maximum number of retries for failed requests:</label>
+  <input type="number" id="maxRetries" value="3" />
+
+  <br />
+
+  <label for="retryDelay"
+    >Delay in milliseconds before retrying a failed request:</label
+  >
+  <input type="number" id="retryDelay" value="5000" />
+
+  <br />
+
+  <button id="runButton" onclick="run()">Run</button>
+
+  <script src="./letterboxd-filter.js"></script>
+</html>
