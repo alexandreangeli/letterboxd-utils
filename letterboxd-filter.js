@@ -68,11 +68,24 @@ async function fetchYearRankings(year) {
     }
 
     const fetchPromises = elements.map((element) =>
-      fetchMovieInfo(element, year)
+      fetchMovieInfo(element, year).catch((error) => {
+        console.error(
+          `Error fetching movie info for ${element.getAttribute(
+            "data-film-slug"
+          )}:`,
+          error
+        );
+        return null; // Return null to indicate the error
+      })
     );
 
     const results = await Promise.all(fetchPromises);
     for (const movieTotalViews of results) {
+      if (movieTotalViews === null) {
+        // Skip movies with errors
+        continue;
+      }
+
       if (movieTotalViews.watches >= minimumViews) {
         specificYearRankingsValid.push(movieTotalViews);
       } else {
