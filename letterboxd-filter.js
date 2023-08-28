@@ -68,7 +68,7 @@ async function fetchYearRankings(year) {
     }
 
     const fetchPromises = elements.map((element) =>
-      fetchMovieInfo(element, year).catch((error) => {
+      fetchMovieInfoWithRetry(element, year).catch((error) => {
         console.error(
           `Error fetching movie info for ${element.getAttribute(
             "data-film-slug"
@@ -115,12 +115,38 @@ async function fetchYearRankings(year) {
     sortedMovies = filteredRankings.sort((a, b) => b.watches - a.watches);
   } else if (sortingOption === "fans") {
     sortedMovies = filteredRankings.sort((a, b) => b.fansCount - a.fansCount);
+  } else if (sortingOption === "fansRatio") {
+    sortedMovies = filteredRankings.sort(
+      (a, b) => b.percentageFansFromWatches - a.percentageFansFromWatches
+    );
   }
 
   return {
     year,
     rankings: sortedMovies.slice(0, numberOfMoviesPerYear)
   };
+}
+
+async function fetchMovieInfoWithRetry(
+  element,
+  year,
+  maxRetries = 5,
+  retryDelay = 3000
+) {
+  let retries = 0;
+
+  while (retries < maxRetries) {
+    try {
+      const movieInfo = await fetchMovieInfo(element, year);
+      return movieInfo;
+    } catch (error) {
+      console.error(`Error fetching movie info (retry ${retries + 1}):`, error);
+      retries++;
+      await new Promise((resolve) => setTimeout(resolve, retryDelay));
+    }
+  }
+
+  throw new Error(`Failed to fetch movie info after ${maxRetries} retries`);
 }
 
 // Fetch movie information
@@ -202,6 +228,9 @@ async function fetchMovieInfo(element, year) {
     );
   } catch {}
 
+  let percentageFansFromWatches = 0;
+  if (watches) percentageFansFromWatches = fansCount / watches;
+
   return {
     LetterboxdURI,
     Title,
@@ -213,6 +242,7 @@ async function fetchMovieInfo(element, year) {
     watches,
     likes,
     fansCount,
+    percentageFansFromWatches,
     runTime
   };
 }
