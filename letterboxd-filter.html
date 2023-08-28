@@ -1,15 +1,17 @@
 <html>
-  <label for="numberOfMoviesPerYear"
-    >Number of top movies to retrieve per year:</label
-  >
-  <input type="number" id="numberOfMoviesPerYear" value="15" />
+  <label for="sortingOption">Sort by:</label>
+  <select id="sortingOption">
+    <option value="rating">Rating</option>
+    <option value="views">Number of Views</option>
+    <option value="fans">Number of Fans</option>
+  </select>
 
   <br />
 
-  <label for="numberOfMoviesToComparePerYear"
-    >Number of movies to consider for comparison per year:</label
+  <label for="numberOfMoviesPerYear"
+    >Number of top movies to retrieve per year:</label
   >
-  <input type="number" id="numberOfMoviesToComparePerYear" value="30" />
+  <input type="number" id="numberOfMoviesPerYear" value="5" />
 
   <br />
 
@@ -39,18 +41,6 @@
 
   <label for="endingYear">Ending year for fetching rankings:</label>
   <input type="number" id="endingYear" value="2023" />
-
-  <br />
-
-  <label for="maxRetries">Maximum number of retries for failed requests:</label>
-  <input type="number" id="maxRetries" value="3" />
-
-  <br />
-
-  <label for="retryDelay"
-    >Delay in milliseconds before retrying a failed request:</label
-  >
-  <input type="number" id="retryDelay" value="5000" />
 
   <br />
 
