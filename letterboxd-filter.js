@@ -1,7 +1,5 @@
-// Create a DOMParser instance
 const parser = new DOMParser();
 
-// Main function
 async function run() {
   const startingYear = parseInt(document.getElementById("startingYear").value);
   const endingYear = parseInt(document.getElementById("endingYear").value);
@@ -17,50 +15,65 @@ async function run() {
   const runButtonParent = runButton.parentElement;
   runButtonParent.removeChild(runButton);
 
-  const newDiv = document.createElement("div");
-  newDiv.innerText = "Script running, please wait...";
-  runButtonParent.appendChild(newDiv);
+  const progressText = document.getElementById("progressText");
+  progressText.innerText = "Script running, please wait...";
 
   let allRankings = [];
 
   for (const year of yearNumbers) {
+    progressText.innerText = `Fetching rankings for year ${year}...`;
+
     const rankings = await fetchYearRankings(year);
     allRankings.push(rankings);
   }
 
+  const sortingOption = document.getElementById("sortingOption").value;
+  const sortedMovieList = sortMovieList(
+    allRankings.flatMap((year) => year.rankings),
+    sortingOption
+  );
+
   console.log({ allRankings });
-  console.log({ movieList: allRankings.flatMap((year) => year.rankings) });
+  console.log({ movieList: sortedMovieList });
   console.log(
     "Copy the movieList object value above and parse it to a CSV in https://www.convertcsv.com/json-to-csv.htm, and then go to the Letterboxd list and import the CSV there"
   );
 
-  newDiv.innerText =
+  progressText.innerText =
     "Rankings fetched successfully! Open the console to see the logs.";
 }
 
-// Fetch rankings for a specific year
 async function fetchYearRankings(year) {
   const numberOfMoviesPerYear = parseInt(
     document.getElementById("numberOfMoviesPerYear").value
   );
-  const minimumViews = parseInt(document.getElementById("minimumViews").value);
-  const minimumRunTime = parseInt(
-    document.getElementById("minimumRunTime").value
+
+  const minViewsBefore1946 = parseInt(
+    document.getElementById("minViewsBefore1946").value
   );
-  const maximumRunTime = parseInt(
-    document.getElementById("maximumRunTime").value
+
+  const minViewsAfter1945 = parseInt(
+    document.getElementById("minViewsAfter1945").value
   );
+
+  let minimumViews;
+
+  if (year <= 1945) {
+    minimumViews = minViewsBefore1946;
+  } else {
+    minimumViews = minViewsAfter1945;
+  }
 
   const specificYearRankingsValid = [];
   const specificYearRankingsInvalid = [];
   let currentPage = 1;
+
   while (true) {
     const yearUrl = `https://letterboxd.com/films/ajax/popular/year/${year}/page/${currentPage}/?esiAllowFilters=true`;
     const yearUrlResponse = await fetch(yearUrl);
     const yearUrlHtml = await yearUrlResponse.text();
     const yearUrlDoc = parser.parseFromString(yearUrlHtml, "text/html");
 
-    // Select movie elements and limit the number of movies to compare
     const elements = [...yearUrlDoc.querySelectorAll(".film-poster")];
 
     if (!elements.length) {
@@ -75,7 +88,7 @@ async function fetchYearRankings(year) {
           )}:`,
           error
         );
-        return null; // Return null to indicate the error
+        return null;
       })
     );
 
@@ -100,26 +113,23 @@ async function fetchYearRankings(year) {
     currentPage++;
   }
 
-  // Get the selected sorting option
   const sortingOption = document.getElementById("sortingOption").value;
+  const ignoreDocumentaries = document.getElementById(
+    "ignoreDocumentaries"
+  ).checked;
 
-  const filteredRankings = specificYearRankingsValid.filter(
-    (movie) =>
-      movie.runTime >= minimumRunTime && movie.runTime <= maximumRunTime
-  );
+  const filteredRankings = specificYearRankingsValid.filter((movie) => {
+    const uppercaseGenres = movie.genres.map((g) => g.toUpperCase());
+    const isDocumentary = uppercaseGenres.includes("DOCUMENTARY");
 
-  let sortedMovies;
-  if (sortingOption === "rating") {
-    sortedMovies = filteredRankings.sort((a, b) => b.rating - a.rating);
-  } else if (sortingOption === "views") {
-    sortedMovies = filteredRankings.sort((a, b) => b.watches - a.watches);
-  } else if (sortingOption === "fans") {
-    sortedMovies = filteredRankings.sort((a, b) => b.fansCount - a.fansCount);
-  } else if (sortingOption === "fansRatio") {
-    sortedMovies = filteredRankings.sort(
-      (a, b) => b.percentageFansFromWatches - a.percentageFansFromWatches
-    );
-  }
+    if (ignoreDocumentaries && isDocumentary) {
+      return false;
+    }
+
+    return true;
+  });
+
+  const sortedMovies = sortMovieList(filteredRankings, sortingOption);
 
   return {
     year,
@@ -149,11 +159,20 @@ async function fetchMovieInfoWithRetry(
   throw new Error(`Failed to fetch movie info after ${maxRetries} retries`);
 }
 
-// Fetch movie information
 async function fetchMovieInfo(element, year) {
-  let LetterboxdURI = `https://letterboxd.com/film/${element.getAttribute(
-    "data-film-slug"
-  )}`;
+  const filmSlug = element.getAttribute("data-film-slug");
+
+  const userBlacklist = document
+    .getElementById("userBlacklist")
+    .value.split(", ")
+    .map((slug) => slug.trim());
+
+  if (userBlacklist.includes(filmSlug)) {
+    console.log(`Skipping movie: ${filmSlug} (in blacklist)`);
+    return null;
+  }
+
+  let LetterboxdURI = `https://letterboxd.com/film/${filmSlug}`;
   const id = element.getAttribute("data-film-id");
   const Title = element.querySelector("[alt]").getAttribute("alt");
   let imdbID = "";
@@ -173,11 +192,17 @@ async function fetchMovieInfo(element, year) {
     );
   } catch {}
 
+  let genres = [];
+  try {
+    genres = Array.from(
+      movieDoc.querySelectorAll("#tab-genres .text-sluglist a.text-slug")
+    ).map((link) => link.textContent.trim());
+  } catch {}
+
   const footerTags = movieDoc
     .querySelector(".text-footer")
     .querySelectorAll("a");
 
-  // Extract IMDB and TMDB IDs from footer links
   imdbID = footerTags[0]
     .getAttribute("href")
     .replace("http://www.imdb.com/title/", "")
@@ -203,7 +228,6 @@ async function fetchMovieInfo(element, year) {
   const statsHtml = await statsResponse.text();
   const statsDoc = parser.parseFromString(statsHtml, "text/html");
 
-  // Extract watch count from movie stats
   let title = statsDoc.querySelector(".filmstat-watches [title]").title;
   const watches = parseInt(title.match(/[\d,]+/)[0].replace(/,/g, ""));
 
@@ -243,6 +267,21 @@ async function fetchMovieInfo(element, year) {
     likes,
     fansCount,
     percentageFansFromWatches,
-    runTime
+    runTime,
+    genres
   };
+}
+
+function sortMovieList(movieList, sortingOption) {
+  const sortingFunctions = {
+    rating: (a, b) => b.rating - a.rating,
+    views: (a, b) => b.watches - a.watches,
+    fans: (a, b) => b.fansCount - a.fansCount,
+    fansRatio: (a, b) =>
+      b.percentageFansFromWatches - a.percentageFansFromWatches
+  };
+
+  return movieList.sort(
+    sortingFunctions[sortingOption] || sortingFunctions.rating
+  );
 }

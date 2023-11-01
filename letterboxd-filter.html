@@ -16,22 +16,15 @@
 
   <br />
 
-  <label for="minimumViews">Minimum amount of views required:</label>
-  <input type="number" id="minimumViews" value="50000" />
+  <label for="minViewsBefore1946">Minimum views for movies before 1946:</label>
+  <input type="number" id="minViewsBefore1946" value="2000" />
 
   <br />
 
-  <label for="minimumRunTime"
-    >Minimum amount of minutes the movies needs:</label
+  <label for="minViewsAfter1945"
+    >Minimum views for movies from 1946 and beyond:</label
   >
-  <input type="number" id="minimumRunTime" value="60" />
-
-  <br />
-
-  <label for="maximumRunTime"
-    >Maximum amount of minutes the movies can have:</label
-  >
-  <input type="number" id="maximumRunTime" value="300" />
+  <input type number" id="minViewsAfter1945" value="20000" />
 
   <br />
 
@@ -45,7 +38,26 @@
 
   <br />
 
+  <label for="ignoreDocumentaries">Ignore Documentaries</label>
+  <input type="checkbox" id="ignoreDocumentaries" checked />
+
+  <br />
+
+  <label for="userBlacklist"
+    >User-defined Blacklist (comma-separated slugs):</label
+  >
+  <input
+    type="text"
+    id="userBlacklist"
+    placeholder="e.g., movie-slug-1, movie-slug-2"
+    value="the-golem-1915, twin-peaks, national-theatre-live-fleabag, taylor-swift-reputation-stadium-tour, attack-on-titan-chronicle, decalogue-i, sherlock-a-study-in-pink, sherlock-the-blind-banker, sherlock-the-great-game, sherlock-a-scandal-in-belgravia, sherlock-the-hounds-of-baskerville, sherlock-the-reichenbach-fall, sherlock-the-empty-hearse, sherlock-the-sign-of-three, sherlock-the-abominable-bride, sherlock-the-six-thatchers, sherlock-the-lying-detective, sherlock-the-final-problem, kill-bill-the-whole-bloody-affair, lemonade-2016, john-mulaney-new-in-town, euphoria-fck-anyone-whos-not-a-sea-blob, the-phantom-of-the-opera-at-the-royal-albert-hall, jerrod-carmichael-rothaniel, black-mirror-the-national-anthem, black-mirror-fifteen-million-merits, black-mirror-the-entire-history-of-you, black-mirror-be-right-back, black-mirror-white-bear, black-mirror-the-waldo-moment, black-mirror-white-christmas, black-mirror-nosedive, black-mirror-playtest, black-mirror-shut-up-and-dance, black-mirror-san-junipero, black-mirror-men-against-fire, black-mirror-hated-in-the-nation, black-mirror-uss-callister, black-mirror-arkangel, black-mirror-crocodile, black-mirror-hang-the-dj, black-mirror-metalhead, black-mirror-black-museum, black-mirror-bandersnatch, black-mirror-striking-vipers, black-mirror-smithereens, black-mirror-rachel-jack-and-ashley-too, black-mirror-joan-is-awful, black-mirror-loch-henry, black-mirror-beyond-the-sea, black-mirror-demon-79, john-mulaney-kid-gorgeous-at-radio-city, bo-burnham-make-happy, hamilton-2020, john-mulaney-the-comeback-kid, bo-burnham-the-inside-outtakes, taylor-swift-the-eras-tour, euphoria-trouble-dont-last-always, hannah-gadsby-nanette, 1989-world-tour, nirvana-unplugged-in-new-york"
+  />
+
+  <br />
+
   <button id="runButton" onclick="run()">Run</button>
+
+  <div id="progressText"></div>
 
   <script src="./letterboxd-filter.js"></script>
 </html>

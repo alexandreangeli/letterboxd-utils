@@ -1,0 +1,39 @@
+[
+  {
+    "createdBy": "G4XV6XzBEeNVnJRav1OnS2yxz4f2",
+    "creationDate": 1693266397368,
+    "currentOwner": "G4XV6XzBEeNVnJRav1OnS2yxz4f2",
+    "description": "",
+    "groupId": "",
+    "id": "Headers_ew6ut",
+    "isSample": false,
+    "lastModifiedBy": "G4XV6XzBEeNVnJRav1OnS2yxz4f2",
+    "modificationDate": 1693267454517,
+    "name": "letterboxd-ignore-tv-and-short-cookie-requestly-rule",
+    "objectType": "rule",
+    "pairs": [
+      {
+        "id": "vi3m6",
+        "modifications": {
+          "Request": [
+            {
+              "header": "Cookie",
+              "id": "b17wc",
+              "type": "Add",
+              "value": "filmFilter=hide-tv%20hide-shorts"
+            }
+          ],
+          "Response": []
+        },
+        "source": {
+          "key": "Url",
+          "operator": "Contains",
+          "value": "letterboxd.com"
+        }
+      }
+    ],
+    "ruleType": "Headers",
+    "status": "Active",
+    "version": 2
+  }
+]
