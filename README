@@ -1,7 +1,1 @@
-Install modules
-Enable the broswer extension "Allow CORS: Access-Control-Allow-Origin"
-Setup the requestly rule if you want to exclude Tv Shows and Short Films
-npm install
-http-server
-Go to http://localhost:8080/letterboxd-filter.html
-Enjoy
+Install and enable the broswer extension "Allow CORS: Access-Control-Allow-Origin"
