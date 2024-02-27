@@ -1,0 +1,20 @@
+<label for="listUrl">Enter Letterboxd List URL:</label>
+<input type="text" id="listUrl" value="https://letterboxd.com/blackkfoxx/list/top-5-movies-by-year-highest-ratings-most/" />
+
+<br />
+
+<label for="sortingOption">Sort by:</label>
+<select id="sortingOption">
+  <option value="rating">Highest rated</option>
+  <option value="views">Most watched</option>
+  <option value="fans">Most favorited</option>
+  <option value="fansRatio">Highest favorited/watched ratio</option>
+</select>
+
+<br />
+
+<button id="runButton" onclick="run()">Run</button>
+
+<div id="progressText"></div>
+
+<script src="./letterboxd-list-sorter.js"></script>

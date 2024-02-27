@@ -1,15 +1,9 @@
 const parser = new DOMParser();
 
 async function run() {
-  const startingYear = parseInt(document.getElementById("startingYear").value);
-  const endingYear = parseInt(document.getElementById("endingYear").value);
+  const listUrl = document.getElementById("listUrl").value;
 
-  const yearNumbers = Array.from(
-    { length: endingYear - startingYear + 1 },
-    (_, i) => {
-      return startingYear + i;
-    }
-  );
+  const sortingOption = document.getElementById("sortingOption").value;
 
   const runButton = document.getElementById("runButton");
   const runButtonParent = runButton.parentElement;
@@ -18,22 +12,9 @@ async function run() {
   const progressText = document.getElementById("progressText");
   progressText.innerText = "Script running, please wait...";
 
-  let allRankings = [];
+  const rankings = await fetchListRankings(listUrl);
+  const sortedMovieList = sortMovieList(rankings, sortingOption);
 
-  for (const year of yearNumbers) {
-    progressText.innerText = `Fetching rankings for year ${year}...`;
-
-    const rankings = await fetchYearRankings(year);
-    allRankings.push(rankings);
-  }
-
-  const sortingOption = document.getElementById("sortingOption").value;
-  const sortedMovieList = sortMovieList(
-    allRankings.flatMap((year) => year.rankings),
-    sortingOption
-  );
-
-  console.log({ allRankings });
   console.log({ movieList: sortedMovieList });
   console.log(
     "Copy the movieList object value above and parse it to a CSV in https://www.convertcsv.com/json-to-csv.htm, and then go to the Letterboxd list and import the CSV there"
@@ -43,79 +24,41 @@ async function run() {
     "Rankings fetched successfully! Open the console to see the logs.";
 }
 
-async function fetchYearRankings(year) {
-  const numberOfMoviesPerYear = parseInt(
-    document.getElementById("numberOfMoviesPerYear").value
-  );
-
-  const minViewsBefore1946 = parseInt(
-    document.getElementById("minViewsBefore1946").value
-  );
-
-  const minViewsAfter1945 = parseInt(
-    document.getElementById("minViewsAfter1945").value
-  );
-
-  let minimumViews;
-
-  if (year <= 1945) {
-    minimumViews = minViewsBefore1946;
-  } else {
-    minimumViews = minViewsAfter1945;
-  }
-
-  const specificYearRankingsValid = [];
-  const specificYearRankingsInvalid = [];
+async function fetchListRankings(listUrl) {
   let currentPage = 1;
+  const rankings = [];
 
   while (true) {
-    const yearUrl = `https://letterboxd.com/hershwin/list/all-the-movies/year/${year}/by/popular/page/${currentPage}/`;
+    const pageUrl = `${listUrl}/page/${currentPage}/`;
 
-    const yearUrlResponse = await fetchDataWithRetry(yearUrl);
-    await delay(100);
-    const yearUrlHtml = await yearUrlResponse.text();
-    const yearUrlDoc = parser.parseFromString(yearUrlHtml, "text/html");
+    const pageResponse = await fetchDataWithRetry(pageUrl);
+    const pageHtml = await pageResponse.text();
+    const pageDoc = parser.parseFromString(pageHtml, "text/html");
 
-    const elements = [...yearUrlDoc.querySelectorAll(".film-poster")];
+    const elements = [...pageDoc.querySelectorAll(".film-poster")];
 
-    if (!elements.length) {
-      break;
+    if (elements.length === 0) {
+      break; // No more pages
     }
 
-
     for (const element of elements) {
-      const movieTotalViews = await fetchMovieInfo(element, year);
+      const movieTotalViews = await fetchMovieInfo(element);
       delay(50);
       if (movieTotalViews === null) {
         // Skip movies with errors
         continue;
       }
 
-      if (movieTotalViews.watches >= minimumViews) {
-        specificYearRankingsValid.push(movieTotalViews);
-      } else {
-        specificYearRankingsInvalid.push(movieTotalViews);
-      }
-    }
-
-    if (specificYearRankingsInvalid.length > 15) {
-      break;
+      rankings.push(movieTotalViews);
     }
 
     currentPage++;
   }
 
-  const sortingOption = document.getElementById("sortingOption").value;
-
-  const sortedMovies = sortMovieList(specificYearRankingsValid, sortingOption);
-
-  return {
-    year,
-    rankings: sortedMovies.slice(0, numberOfMoviesPerYear)
-  };
+  return rankings;
 }
 
-async function fetchMovieInfo(element, year) {
+async function fetchMovieInfo(element) {
   const filmSlug = element.getAttribute("data-film-slug");
 
   let LetterboxdURI = `https://letterboxd.com/film/${filmSlug}`;
@@ -205,7 +148,6 @@ async function fetchMovieInfo(element, year) {
     LetterboxdURI,
     Title,
     id,
-    year,
     imdbID,
     tmdbID,
     rating,
@@ -251,11 +193,11 @@ async function fetchDataWithRetry(url) {
     currentRetry++;
 
     // Wait for some time before retrying (you may adjust the delay as needed)
-    await delay(1000)
+    await delay(1000);
   }
 
   // If all retries fail, handle the error accordingly
   console.error(`Failed to fetch data after ${maxRetries} retries from ${url}`);
 }
 
-const delay = async (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = async (ms) => new Promise((resolve) => setTimeout(resolve, ms));
